@@ -1,0 +1,11 @@
+[project]
+name = "safepath"
+dynamic = [ "version" ]
+
+[tool.poetry]
+version = "0.1"  # base version
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "src"
+]
