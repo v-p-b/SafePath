@@ -1,22 +1,18 @@
 import re
 from typing import Self, overload
 
-"""
-Portability: Make the user decide (remote vs. local paths)?
-"""
-
 
 class Path(object):
     def __init__(self):
         self._elements = []
-        self._separator = "/"
-        self.__element_regex = re.compile("[0-9A-Za-z-_\.]+")
-        self._relative_parents = [".."]
-        self._relative_currents = [".", ""]
-        self._root_element = ""
+        self._separator = None
+        self._element_regex = None
+        self._relative_parents = None 
+        self._relative_currents = None
+        self._root_element = None
 
     def _validate_relative_element(self, element: str):
-        m_element = self.__element_regex.fullmatch(element)
+        m_element = self._element_regex.fullmatch(element)
         if m_element is None:
             raise Exception("Invalid character in element name")
 
@@ -24,6 +20,9 @@ class Path(object):
         self._validate_relative_element(element)
         if self.is_parent_element(element) or self.is_current_element(element):
             raise Exception("Relative elements disallowed")
+
+    def _validate_root(self, element):
+        raise NotImplementedError("Root validation not implemented in base class")
 
     def is_parent_element(self, e: str) -> bool:
         """Returns True if the element is relative, referencing the parent path. E.g.: '..'"""
@@ -33,9 +32,19 @@ class Path(object):
         """Returns True if the element is relative, referencing the current path. E.g.: '.'"""
         return element in self._relative_currents
 
+    def set_absolute(self, element: str):
+        self._validate_root(element)
+        self._root_element = element
+
+    def set_relative(self):
+        self._root_element = None
+
+    def is_absolute(self):
+        return self._root_element != None
+
     def __str__(self) -> str:
         """Returns the path as a string"""
-        return self._separator + self._separator.join(self._elements)
+        raise NotImplementedError("Not implemented in base class!")
 
     @overload
     def __add__(self, path: str) -> Self:
@@ -122,3 +131,42 @@ class Path(object):
         _validate_root(element)
         self._root = element
         return self
+
+class UnixPath(Path):
+    def __init__(self):
+        super().__init__()
+        self._elements = []
+        self._separator = "/"
+        self._element_regex = re.compile(r"[0-9A-Za-z-_\.]+") # TODO
+        self._relative_parents = [".."]
+        self._relative_currents = [".", ""]
+        self._root_element=""
+
+    def __str__(self) -> str:
+        if self.is_absolute():
+            return self._separator+self._separator.join(self._elements)
+        else:
+            return self._separator.join(self._elements)
+
+class WindowsPath(Path):
+    _DRIVE_RE = re.compile("[A-Z]:")
+    def __init__(self):
+        super().__init__()
+        self._elements = []
+        self._separator = "\\"
+        self._element_regex = re.compile(r"[0-9A-Za-z-_\.]+") # TODO
+        self._relative_parents = [".."]
+        self._relative_currents = [".", ""]
+        self._root_element="C:"
+
+    def _validate_root(self, element: str):
+        if WindowsPath._DRIVE_RE.fullmatch(element.upper()):
+            return
+        raise Exception("Invalid Windows drive root")
+
+    def __str__(self) -> str:
+        if self.is_absolute():
+            return self._root_element+self._separator+self._separator.join(self._elements)
+        else:
+            return self._separator.join(self._elements)
+
