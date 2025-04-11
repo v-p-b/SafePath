@@ -7,7 +7,7 @@ class Path(object):
         self._elements = []
         self._separator = None
         self._element_regex = None
-        self._relative_parents = None 
+        self._relative_parents = None
         self._relative_currents = None
         self._root_element = None
 
@@ -53,16 +53,13 @@ class Path(object):
         return self
 
     @overload
-    def __add__(self, path: str) -> Self:
-        ...
+    def __add__(self, path: str) -> Self: ...
 
     @overload
-    def __add__(self, path: Self) -> Self:
-        ...
+    def __add__(self, path: Self) -> Self: ...
 
     @overload
-    def __add__(self, path: list[str]) -> Self:
-        ...
+    def __add__(self, path: list[str]) -> Self: ...
 
     def __add__(self, path) -> Self:
         """Appends a non-relative element to the path."""
@@ -74,6 +71,11 @@ class Path(object):
             self = self.add_elements(path.get_elements())
         else:
             raise NotImplementedError("Addition not implemented for this type")
+        return self
+
+    def __sub__(self, levels: int) -> Self:
+        for _ in range(0, levels):
+            self._elements.pop()
         return self
 
     def get_elements(self) -> list[str]:
@@ -132,32 +134,35 @@ class Path(object):
         self._root = element
         return self
 
+
 class UnixPath(Path):
     def __init__(self):
         super().__init__()
         self._elements = []
         self._separator = "/"
-        self._element_regex = re.compile(r"[0-9A-Za-z-_\.]+") # TODO
+        self._element_regex = re.compile(r"[0-9A-Za-z-_\.]+")  # TODO
         self._relative_parents = [".."]
         self._relative_currents = [".", ""]
-        self._root_element=""
+        self._root_element = ""
 
     def __str__(self) -> str:
         if self.is_absolute():
-            return self._separator+self._separator.join(self._elements)
+            return self._separator + self._separator.join(self._elements)
         else:
             return self._separator.join(self._elements)
 
+
 class WindowsPath(Path):
     _DRIVE_RE = re.compile("[A-Z]:")
+
     def __init__(self):
         super().__init__()
         self._elements = []
         self._separator = "\\"
-        self._element_regex = re.compile(r"[0-9A-Za-z-_\.]+") # TODO
+        self._element_regex = re.compile(r"[0-9A-Za-z-_\.]+")  # TODO
         self._relative_parents = [".."]
         self._relative_currents = [".", ""]
-        self._root_element="C:"
+        self._root_element = "C:"
 
     def _validate_root(self, element: str):
         if WindowsPath._DRIVE_RE.fullmatch(element.upper()):
@@ -166,7 +171,10 @@ class WindowsPath(Path):
 
     def __str__(self) -> str:
         if self.is_absolute():
-            return self._root_element+self._separator+self._separator.join(self._elements)
+            return (
+                self._root_element
+                + self._separator
+                + self._separator.join(self._elements)
+            )
         else:
             return self._separator.join(self._elements)
-
