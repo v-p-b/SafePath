@@ -56,8 +56,10 @@ The library doesn't provide information about whether a path exists, or about th
 
 ## TODO
 
+* More tests
 * Documentation
 * Proper exception types
+* Proper element validation
 * Atomicity: Guarantee that path operations either succeed or fail, and don't leave the object in an unpredictable state
 * Thread safety?
 

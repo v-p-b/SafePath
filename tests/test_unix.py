@@ -1,6 +1,5 @@
 import pytest
-from safepath.path import UnixPath, WindowsPath
-
+from safepath.path import *
 
 def test_add_operator_string():
     p = UnixPath()
@@ -52,7 +51,7 @@ def test_relative_parse_wrong_obj():
 def test_relative_parse_too_deep():
     p = UnixPath()
     p += ["var", "www", "app", "upload", "user1", "obj1"]
-    with pytest.raises(Exception):
+    with pytest.raises(PathTraversalException):
         p = p.add_relative("../../obj2", "/var/www/app/upload/user1")
 
 
@@ -74,28 +73,28 @@ def test_add_operator_object():
 def test_invalid():
     p = UnixPath()
     p += "etc"
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidPathElementException):
         p += "?"
 
 
 def test_invalid_relative():
     p = UnixPath()
     p += "etc"
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidPathElementException):
         p += ".."
 
 
 def test_invalid_relative2():
     p = UnixPath()
     p += "etc"
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidPathElementException):
         p += "/passwd"
 
 
 def test_invalid_relative3():
     p = UnixPath()
     p += "etc"
-    with pytest.raises(Exception):
+    with pytest.raises(InvalidPathElementException):
         p += "/../tmp"
 
 
@@ -111,5 +110,5 @@ def test_sub_beyond_root():
     p = UnixPath()
     p += "etc"
     p += "ssh"
-    with pytest.raises(Exception):
+    with pytest.raises(PathTraversalException):
         p -= 3

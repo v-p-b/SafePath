@@ -1,6 +1,11 @@
 import re
 from typing import Self, overload
 
+class InvalidPathElementException(Exception):
+    pass
+
+class PathTraversalException(Exception):
+    pass
 
 class Path(object):
     def __init__(self):
@@ -14,12 +19,12 @@ class Path(object):
     def _validate_relative_element(self, element: str):
         m_element = self._element_regex.fullmatch(element)
         if m_element is None:
-            raise Exception("Invalid character in element name")
+            raise InvalidPathElementException("Invalid character in element name")
 
     def _validate_element(self, element: str):
         self._validate_relative_element(element)
         if self.is_parent_element(element) or self.is_current_element(element):
-            raise Exception("Relative elements disallowed")
+            raise InvalidPathElementException("Relative elements disallowed")
 
     def _validate_root(self, element):
         raise NotImplementedError("Root validation not implemented in base class")
@@ -74,7 +79,10 @@ class Path(object):
 
     def __sub__(self, levels: int) -> Self:
         for _ in range(0, levels):
-            self._elements.pop()
+            try:
+                self._elements.pop()
+            except IndexError:
+                raise PathTraversalException("Traversal beyond path root")
         return self
 
     def __contains__(self, item: Self) -> bool:
@@ -154,13 +162,12 @@ class Path(object):
                 self._elements.append(e)
 
         if self not in base_elements:
-            raise Exception("Traversal beyond base path")
+            raise PathTraversalException("Traversal beyond base path")
 
         return self
 
     def _validate_root(self, element: str):
-        # raise NotImplementedError("Not implemented")
-        return True
+        raise NotImplementedError("Not implemented")
 
     def set_root(self, element: str) -> Self:
         _validate_root(element)
@@ -184,6 +191,11 @@ class UnixPath(Path):
         else:
             return self._separator.join(self._elements)
 
+    def _validate_root(self, element: str):
+        if len(element)!=0:
+            raise InvalidPathElementException("Invalid Unix root")
+
+
 
 class WindowsPath(Path):
     _DRIVE_RE = re.compile("[A-Z]:")
@@ -200,7 +212,7 @@ class WindowsPath(Path):
     def _validate_root(self, element: str):
         if WindowsPath._DRIVE_RE.fullmatch(element.upper()):
             return
-        raise Exception("Invalid Windows drive root")
+        raise InvalidPathElementException("Invalid Windows drive root")
 
     def __str__(self) -> str:
         if self.is_absolute():
