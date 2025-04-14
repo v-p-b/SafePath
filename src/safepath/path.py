@@ -32,12 +32,14 @@ class Path(object):
         """Returns True if the element is relative, referencing the current path. E.g.: '.'"""
         return element in self._relative_currents
 
-    def set_absolute(self, element: str):
+    def set_absolute(self, element: str) -> Self:
         self._validate_root(element)
         self._root_element = element
+        return self
 
-    def set_relative(self):
+    def set_relative(self) -> Self:
         self._root_element = None
+        return self
 
     def is_absolute(self):
         return self._root_element != None
@@ -47,10 +49,7 @@ class Path(object):
         raise NotImplementedError("Not implemented in base class!")
 
     @overload
-    def __add__(self, path: str) -> Self:
-        """Appends a non-relative element to the path."""
-        self.parse(path, True)
-        return self
+    def __add__(self, path: str) -> Self: ...
 
     @overload
     def __add__(self, path: str) -> Self: ...
@@ -64,7 +63,7 @@ class Path(object):
     def __add__(self, path) -> Self:
         """Appends a non-relative element to the path."""
         if isinstance(path, str):
-            self = self.parse(path, preserve=True)
+            self = self.parse_partial(path)
         elif isinstance(path, list):
             self = self.add_elements(path)
         elif isinstance(path, Path):
@@ -87,39 +86,66 @@ class Path(object):
             self._elements.append(e)
         return self
 
-    def parse(self, path: str, preserve: bool) -> Self:
-        """Parses a path string into this Path object. The string must not contain relative elements.
+    def _parse_internal(self, path: str) -> list[str]:
+        elements=[]
+        path_elements = path.split(self._separator)
+        for e in path_elements[1:]:
+            self._validate_element(e)
+            elements.append(e)
+        return elements
+
+    def _validate_full_path(self, path: str):
+        path_elements = path.split(self._separator)
+        self._validate_root(path_elements[0])
+
+    def parse(self, path: str) -> Self:
+        """Parses a full path string into this Path object, replacing the previously represented path. The string must not contain relative elements.
 
         Keyword Arguments:
         path -- The path string to be parsed.
-        preserve -- If True the path string will be appended to the existing path is this object. If False the path will be replaced.
         """
-        if not preserve:
-            self._elements = []
-        for e in path.split(self._separator):
-            self._validate_element(e)
-            self._elements.append(e)
+        self._elements = []
+        path_elements = path.split(self._separator)
+        self.set_absolute(path_elements[0])
+        self.add_elements(path_elements[1:])
+
         return self
 
-    def parse_relative(self, path: str, preserve: bool, base: list[str]) -> Self:
+    def parse_partial(self, path: str) -> Self:
+        path_elements = path.split(self._separator)
+        self.add_elements(path_elements)
+        return self
+
+    @overload
+    def add_relative(self, path: str,  base: str ) -> Self: ...
+
+    @overload
+    def add_relative(self, path: str,  base: Self ) -> Self: ...
+
+    def add_relative(self, path: str,  base) -> Self:
         """Parses a path string into this Path object. The string can contain relative elements.
 
         Keyword Arguments:
         path -- The path string to be parsed.
-        preserve -- If True the path string will be appended to the existing path is this object. If False the path will be replaced.
-        base -- The base directory represented as a list of valid elements. If the resulting path is outside of this directory an exception is raised.
+        base -- The base directory represented as an absolute path string or Path object. If the resulting path is outside of this directory an exception is raised.
         """
+        base_elements=None
+        if isinstance(base, str):
+            clazz=self.__class__
+            base_elements = clazz().parse(base)
+        elif isinstance(base, self.__class__):
+            base_elements = base
+        else:
+            raise NotImplementedError("Parser not implemented for base path")
 
-        if not preserve:
-            self._elements = []
         for e in path.split(self._separator):
             self._validate_relative_element(e)
             if self.is_parent_element(e):
                 self._elements.pop()  # Can raise IndexError
-            if not self.is_current_element(e):
+            elif not self.is_current_element(e):
                 self._elements.append(e)
 
-        for i, base_element in enumerate(base):
+        for i, base_element in enumerate(base_elements._elements): # TODO operator overload
             self._validate_element(base_element)
             if base_element != self._elements[i]:
                 raise Exception("Traversal beyond base path")
@@ -127,7 +153,8 @@ class Path(object):
         return self
 
     def _validate_root(self, element: str):
-        raise NotImplementedError("Not implemented")
+        #raise NotImplementedError("Not implemented")
+        return True
 
     def set_root(self, element: str) -> Self:
         _validate_root(element)

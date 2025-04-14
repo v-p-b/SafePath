@@ -56,6 +56,8 @@ The library doesn't provide information about whether a path exists, or about th
 
 ## TODO
 
+* Documentation
+* Proper exception types
 * Atomicity: Guarantee that path operations either succeed or fail, and don't leave the object in an unpredictable state
 * Thread safety?
 
