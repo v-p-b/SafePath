@@ -16,37 +16,42 @@ def test_relative():
     p += "ssh/sshd_config"
     assert str(p) == "etc/ssh/sshd_config"
 
+
 def test_relative_parse():
     p = UnixPath()
-    p +=  ["var", "www", "app", "upload", "user1", "obj1"]
+    p += ["var", "www", "app", "upload", "user1", "obj1"]
     p = p.add_relative("../obj2", "/var/www/app/upload/user1")
     assert str(p) == "/var/www/app/upload/user1/obj2"
+
 
 def test_relative_parse_str():
     p = UnixPath()
-    p +=  ["var", "www", "app", "upload", "user1", "obj1"]
+    p += ["var", "www", "app", "upload", "user1", "obj1"]
     p = p.add_relative("../obj2", "/var/www/app/upload/user1")
     assert str(p) == "/var/www/app/upload/user1/obj2"
 
+
 def test_relative_parse_obj():
     p = UnixPath()
-    p +=  ["var", "www", "app", "upload", "user1", "obj1"]
+    p += ["var", "www", "app", "upload", "user1", "obj1"]
     base = UnixPath()
-    base +=  ["var", "www", "app", "upload", "user1"]
+    base += ["var", "www", "app", "upload", "user1"]
     p = p.add_relative("../obj2", base)
     assert str(p) == "/var/www/app/upload/user1/obj2"
 
+
 def test_relative_parse_wrong_obj():
     p = UnixPath()
-    p +=  ["var", "www", "app", "upload", "user1", "obj1"]
+    p += ["var", "www", "app", "upload", "user1", "obj1"]
     base = WindowsPath()
-    base +=  ["var", "www", "app", "upload", "user1"]
+    base += ["var", "www", "app", "upload", "user1"]
     with pytest.raises(Exception):
         p = p.add_relative("../obj2", base)
 
+
 def test_relative_parse_too_deep():
     p = UnixPath()
-    p +=  ["var", "www", "app", "upload", "user1", "obj1"]
+    p += ["var", "www", "app", "upload", "user1", "obj1"]
     with pytest.raises(Exception):
         p = p.add_relative("../../obj2", "/var/www/app/upload/user1")
 

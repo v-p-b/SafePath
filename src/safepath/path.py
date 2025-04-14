@@ -78,7 +78,7 @@ class Path(object):
         return self
 
     def __contains__(self, item: Self) -> bool:
-        item_elements=item.get_elements()
+        item_elements = item.get_elements()
         for i, base_element in enumerate(self._elements):
             self._validate_element(base_element)
             if base_element != item_elements[i]:
@@ -95,7 +95,7 @@ class Path(object):
         return self
 
     def _parse_internal(self, path: str) -> list[str]:
-        elements=[]
+        elements = []
         path_elements = path.split(self._separator)
         for e in path_elements[1:]:
             self._validate_element(e)
@@ -125,21 +125,21 @@ class Path(object):
         return self
 
     @overload
-    def add_relative(self, path: str,  base: str ) -> Self: ...
+    def add_relative(self, path: str, base: str) -> Self: ...
 
     @overload
-    def add_relative(self, path: str,  base: Self ) -> Self: ...
+    def add_relative(self, path: str, base: Self) -> Self: ...
 
-    def add_relative(self, path: str,  base) -> Self:
+    def add_relative(self, path: str, base) -> Self:
         """Parses a path string into this Path object. The string can contain relative elements.
 
         Keyword Arguments:
         path -- The path string to be parsed.
         base -- The base directory represented as an absolute path string or Path object. If the resulting path is outside of this directory an exception is raised.
         """
-        base_elements=None
+        base_elements = None
         if isinstance(base, str):
-            clazz=self.__class__
+            clazz = self.__class__
             base_elements = clazz().parse(base)
         elif isinstance(base, self.__class__):
             base_elements = base
@@ -159,7 +159,7 @@ class Path(object):
         return self
 
     def _validate_root(self, element: str):
-        #raise NotImplementedError("Not implemented")
+        # raise NotImplementedError("Not implemented")
         return True
 
     def set_root(self, element: str) -> Self:
