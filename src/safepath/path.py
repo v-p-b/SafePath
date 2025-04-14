@@ -77,6 +77,14 @@ class Path(object):
             self._elements.pop()
         return self
 
+    def __contains__(self, item: Self) -> bool:
+        item_elements=item.get_elements()
+        for i, base_element in enumerate(self._elements):
+            self._validate_element(base_element)
+            if base_element != item_elements[i]:
+                return False
+        return True
+
     def get_elements(self) -> list[str]:
         return self._elements
 
@@ -145,10 +153,8 @@ class Path(object):
             elif not self.is_current_element(e):
                 self._elements.append(e)
 
-        for i, base_element in enumerate(base_elements._elements): # TODO operator overload
-            self._validate_element(base_element)
-            if base_element != self._elements[i]:
-                raise Exception("Traversal beyond base path")
+        if self not in base_elements:
+            raise Exception("Traversal beyond base path")
 
         return self
 
