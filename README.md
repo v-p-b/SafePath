@@ -44,6 +44,36 @@ Relative paths are special and users should explicitly request the handling of t
 * Public methods that accept Relative Elements always require the sepcification of a base path: if the final path is outside of the base path an exception is thrown
   * If during parsing of a path a Relative Element would traverse beyond the filesystem root, an exception is thrown
 
+### Examples
+
+From tests, for now:
+
+```py
+def test_add_operator_string():
+    p = UnixPath()
+    p += "etc"
+    p += "ssh/sshd_config"
+    assert str(p) == "/etc/ssh/sshd_config"
+
+def test_relative_parse():
+    p = UnixPath()
+    p += ["var", "www", "app", "upload", "user1", "obj1"]
+    p = p.add_relative("../obj2", "/var/www/app/upload/user1")
+    assert str(p) == "/var/www/app/upload/user1/obj2"
+
+def test_invalid_relative():
+    p = UnixPath()
+    p += "etc"
+    with pytest.raises(InvalidPathElementException):
+        p += ".."
+
+def test_drive_letter():
+    p = WindowsPath()
+    p.set_absolute("X:")
+    p += "Windows"
+    p += "system32\\cmd.exe"
+    assert str(p) == "X:\\Windows\\system32\\cmd.exe"
+```
 
 ## Limitations
 
