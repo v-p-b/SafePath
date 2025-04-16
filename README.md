@@ -46,7 +46,7 @@ Relative paths are special and users should explicitly request the handling of t
 
 ### Examples
 
-From tests, for now:
+From [tests](tests/), for now:
 
 ```py
 def test_add_operator_string():
@@ -66,6 +66,13 @@ def test_invalid_relative():
     p += "etc"
     with pytest.raises(InvalidPathElementException):
         p += ".."
+
+
+def test_relative_parse_too_deep():
+    p = UnixPath()
+    p += ["var", "www", "app", "upload", "user1", "obj1"]
+    with pytest.raises(PathTraversalException):
+        p = p.add_relative("../../obj2", "/var/www/app/upload/user1")
 
 def test_drive_letter():
     p = WindowsPath()
