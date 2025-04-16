@@ -7,6 +7,11 @@ def test_add_operator_string():
     p += "ssh/sshd_config"
     assert str(p) == "/etc/ssh/sshd_config"
 
+def test_div_operator_string():
+    p = UnixPath("/etc") / "ssh/sshd_config"
+    assert str(p) == "/etc/ssh/sshd_config"
+
+
 
 def test_relative():
     p = UnixPath()

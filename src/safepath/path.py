@@ -11,13 +11,15 @@ class PathTraversalException(Exception):
 
 
 class Path(object):
-    def __init__(self):
+    def __init__(self, path: str = None) -> Self:
         self._elements = []
         self._separator = None
         self._element_regex = None
         self._relative_parents = None
         self._relative_currents = None
         self._root_element = None
+        if isinstance(path, str):
+           self.parse(path) 
 
     def _validate_relative_element(self, element: str):
         """Validates a single element that may be a relative element.
@@ -122,6 +124,12 @@ class Path(object):
             raise NotImplementedError("Addition not implemented for this type")
         return self
 
+    def __floordiv__(self, other) -> Self:
+        return self.__add__(other)
+
+    def __truediv__(self, other) -> Self:
+        return self.__add__(other)
+
     def __sub__(self, levels: int) -> Self:
         """Traverses the current path toward the root for `levels` element.
         Throws `PathTraversalException` is the operation traverses beyond the last path element.
@@ -223,7 +231,7 @@ class Path(object):
 
 
 class UnixPath(Path):
-    def __init__(self):
+    def __init__(self, path: str = None):
         super().__init__()
         self._elements = []
         self._separator = "/"
@@ -231,6 +239,8 @@ class UnixPath(Path):
         self._relative_parents = [".."]
         self._relative_currents = [".", ""]
         self._root_element = ""
+        if isinstance(path, str):
+           self.parse(path) 
 
     def __str__(self) -> str:
         if self.is_absolute():
@@ -246,7 +256,7 @@ class UnixPath(Path):
 class WindowsPath(Path):
     _DRIVE_RE = re.compile("[A-Z]:")
 
-    def __init__(self):
+    def __init__(self, path: str = None) -> Self:
         super().__init__()
         self._elements = []
         self._separator = "\\"
@@ -254,6 +264,8 @@ class WindowsPath(Path):
         self._relative_parents = [".."]
         self._relative_currents = [".", ""]
         self._root_element = "C:"
+        if isinstance(path, str):
+           self.parse(path) 
 
     def _validate_root(self, element: str):
         if WindowsPath._DRIVE_RE.fullmatch(element.upper()):
