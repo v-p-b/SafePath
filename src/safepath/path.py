@@ -68,7 +68,7 @@ class Path(object):
     def __add__(self, path) -> Self:
         """Appends a non-relative element to the path."""
         if isinstance(path, str):
-            self = self.parse_partial(path)
+            self = self.parse_segment(path)
         elif isinstance(path, list):
             self = self.add_elements(path)
         elif isinstance(path, Path):
@@ -102,14 +102,6 @@ class Path(object):
             self._elements.append(e)
         return self
 
-    def _parse_internal(self, path: str) -> list[str]:
-        elements = []
-        path_elements = path.split(self._separator)
-        for e in path_elements[1:]:
-            self._validate_element(e)
-            elements.append(e)
-        return elements
-
     def _validate_full_path(self, path: str):
         path_elements = path.split(self._separator)
         self._validate_root(path_elements[0])
@@ -127,7 +119,7 @@ class Path(object):
 
         return self
 
-    def parse_partial(self, path: str) -> Self:
+    def parse_segment(self, path: str) -> Self:
         path_elements = path.split(self._separator)
         self.add_elements(path_elements)
         return self
@@ -139,7 +131,8 @@ class Path(object):
     def add_relative(self, path: str, base: Self) -> Self: ...
 
     def add_relative(self, path: str, base) -> Self:
-        """Parses a path string into this Path object. The string can contain relative elements.
+        """Parses a path string into this Path object. The string can contain relative elements. 
+        TODO: Maybe this deserves an operator?
 
         Keyword Arguments:
         path -- The path string to be parsed.
