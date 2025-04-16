@@ -72,6 +72,9 @@ Being an experimental library, this package must only be used by implementing te
 
 Installation in development mode: `pip install -e .`
 
+Use the Issue Tracker liberally not only to report bugs and request features but also to suggest changes and even concerns about the overall design. 
+
+
 
 ## TODO
 
