@@ -1,11 +1,14 @@
 import re
 from typing import Self, overload
 
+
 class InvalidPathElementException(Exception):
     pass
 
+
 class PathTraversalException(Exception):
     pass
+
 
 class Path(object):
     def __init__(self):
@@ -17,9 +20,9 @@ class Path(object):
         self._root_element = None
 
     def _validate_relative_element(self, element: str):
-        """Validates a single element that may be a relative element. 
+        """Validates a single element that may be a relative element.
         Throws `InvalidPathElementException` if the element is invalid.
-        
+
         Keyword arguments:
         element -- The element to validate.
         """
@@ -41,7 +44,7 @@ class Path(object):
     def _validate_root(self, element: str):
         """Validates a root element.
         Should throw `InvalidPathElementException` if the element is invalid.
-        Not implemented in the base class. 
+        Not implemented in the base class.
 
         Keyword arguments:
         element -- The element to validate.
@@ -76,8 +79,7 @@ class Path(object):
         return self
 
     def set_relative(self) -> Self:
-        """Makes the path relative by unsetting the root element.
-        """
+        """Makes the path relative by unsetting the root element."""
         self._root_element = None
         return self
 
@@ -106,9 +108,9 @@ class Path(object):
     def __add__(self, path) -> Self:
         """Appends a non-relative element to the path.
         Throws `InvalidPathElementException` if any path element is invalid.
-        
+
         Keyword arguments:
-        path -- The path segment to append. The argument can be a string, a list of elements (as strings) or a `Path` object. 
+        path -- The path segment to append. The argument can be a string, a list of elements (as strings) or a `Path` object.
         """
         if isinstance(path, str):
             self = self.parse_segment(path)
@@ -149,7 +151,7 @@ class Path(object):
 
     def add_elements(self, elements: list[str]) -> Self:
         """Adds a list of path elements to the current path.
-        Throws `InvalidPathElementException` if any path element is invalid. 
+        Throws `InvalidPathElementException` if any path element is invalid.
         """
         for e in elements:
             self._validate_element(e)
@@ -171,7 +173,7 @@ class Path(object):
 
     def parse_segment(self, path: str) -> Self:
         """Parses a string as a path segment and adds its elements to the current path. The path string must not be an absolute path.
-        Throws `InvalidPathElementException` if any path element is invalid. 
+        Throws `InvalidPathElementException` if any path element is invalid.
         """
         path_elements = path.split(self._separator)
         self.add_elements(path_elements)
@@ -184,7 +186,7 @@ class Path(object):
     def add_relative(self, path: str, base: Self) -> Self: ...
 
     def add_relative(self, path: str, base) -> Self:
-        """Parses a path string into this Path object. The string can contain relative elements. 
+        """Parses a path string into this Path object. The string can contain relative elements.
         TODO: Maybe this deserves an operator?
 
         Keyword Arguments:
@@ -237,9 +239,8 @@ class UnixPath(Path):
             return self._separator.join(self._elements)
 
     def _validate_root(self, element: str):
-        if len(element)!=0:
+        if len(element) != 0:
             raise InvalidPathElementException("Invalid Unix root")
-
 
 
 class WindowsPath(Path):
