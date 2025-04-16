@@ -17,47 +17,85 @@ class Path(object):
         self._root_element = None
 
     def _validate_relative_element(self, element: str):
+        """Validates a single element that may be a relative element. 
+        Throws `InvalidPathElementException` if the element is invalid.
+        
+        Keyword arguments:
+        element -- The element to validate.
+        """
         m_element = self._element_regex.fullmatch(element)
         if m_element is None:
             raise InvalidPathElementException("Invalid character in element name")
 
     def _validate_element(self, element: str):
+        """Validates a path element. The element must not be valid and non-relative.
+        Throws `InvalidPathElementException` if the element is invalid.
+
+        Keyword arguments:
+        element -- The element to validate.
+        """
         self._validate_relative_element(element)
         if self.is_parent_element(element) or self.is_current_element(element):
             raise InvalidPathElementException("Relative elements disallowed")
 
-    def _validate_root(self, element):
+    def _validate_root(self, element: str):
+        """Validates a root element.
+        Should throw `InvalidPathElementException` if the element is invalid.
+        Not implemented in the base class. 
+
+        Keyword arguments:
+        element -- The element to validate.
+        """
         raise NotImplementedError("Root validation not implemented in base class")
 
-    def is_parent_element(self, e: str) -> bool:
-        """Returns True if the element is relative, referencing the parent path. E.g.: '..'"""
-        return e in self._relative_parents
+    def is_parent_element(self, element: str) -> bool:
+        """Returns True if the element is relative, referencing the parent path. E.g.: '..'
+
+        Keyword arguments:
+        element -- The element to validate.
+        """
+        return element in self._relative_parents
 
     def is_current_element(self, element: str) -> bool:
-        """Returns True if the element is relative, referencing the current path. E.g.: '.'"""
+        """Returns True if the element is relative, referencing the current path. E.g.: '.'
+
+        Keyword arguments:
+        element -- The element to validate.
+        """
         return element in self._relative_currents
 
     def set_absolute(self, element: str) -> Self:
+        """Sets a new root element, making the current path absolute.
+        Throws `InvalidPathElementException` if the new root element is invalid.
+
+        Keyword arguments:
+        element -- The new root element.
+        """
         self._validate_root(element)
         self._root_element = element
         return self
 
     def set_relative(self) -> Self:
+        """Makes the path relative by unsetting the root element.
+        """
         self._root_element = None
         return self
 
-    def is_absolute(self):
+    def is_absolute(self) -> bool:
+        """Returns true if the current path is an absolute path."""
         return self._root_element != None
 
     def __str__(self) -> str:
-        """Returns the path as a string"""
+        """Returns the path as a string.
+        Not implemented in the base class.
+        """
         raise NotImplementedError("Not implemented in base class!")
 
     @overload
     def __add__(self, path: str) -> Self: ...
 
     @overload
-    def __add__(self, path: str) -> Self: ...
+    def __add__(self, path: list[str]) -> Self: ...
 
     @overload
     def __add__(self, path: Self) -> Self: ...
@@ -66,7 +104,12 @@ class Path(object):
     def __add__(self, path: list[str]) -> Self: ...
 
     def __add__(self, path) -> Self:
-        """Appends a non-relative element to the path."""
+        """Appends a non-relative element to the path.
+        Throws `InvalidPathElementException` if any path element is invalid.
+        
+        Keyword arguments:
+        path -- The path segment to append. The argument can be a string, a list of elements (as strings) or a `Path` object. 
+        """
         if isinstance(path, str):
             self = self.parse_segment(path)
         elif isinstance(path, list):
@@ -78,6 +121,12 @@ class Path(object):
         return self
 
     def __sub__(self, levels: int) -> Self:
+        """Traverses the current path toward the root for `levels` element.
+        Throws `PathTraversalException` is the operation traverses beyond the last path element.
+
+        Keyword arguments:
+        levels -- An integer specifying the number of element to remove from the current path.
+        """
         for _ in range(0, levels):
             try:
                 self._elements.pop()
@@ -86,6 +135,7 @@ class Path(object):
         return self
 
     def __contains__(self, item: Self) -> bool:
+        """Returns True if `item` is a subpath of the current `Path` object."""
         item_elements = item.get_elements()
         for i, base_element in enumerate(self._elements):
             self._validate_element(base_element)
@@ -94,17 +144,17 @@ class Path(object):
         return True
 
     def get_elements(self) -> list[str]:
+        """Returns a list of path elements that make up the current path."""
         return self._elements
 
     def add_elements(self, elements: list[str]) -> Self:
+        """Adds a list of path elements to the current path.
+        Throws `InvalidPathElementException` if any path element is invalid. 
+        """
         for e in elements:
             self._validate_element(e)
             self._elements.append(e)
         return self
-
-    def _validate_full_path(self, path: str):
-        path_elements = path.split(self._separator)
-        self._validate_root(path_elements[0])
 
     def parse(self, path: str) -> Self:
         """Parses a full path string into this Path object, replacing the previously represented path. The string must not contain relative elements.
@@ -120,6 +170,9 @@ class Path(object):
         return self
 
     def parse_segment(self, path: str) -> Self:
+        """Parses a string as a path segment and adds its elements to the current path. The path string must not be an absolute path.
+        Throws `InvalidPathElementException` if any path element is invalid. 
+        """
         path_elements = path.split(self._separator)
         self.add_elements(path_elements)
         return self
@@ -160,12 +213,11 @@ class Path(object):
         return self
 
     def _validate_root(self, element: str):
+        """Validates a root element.
+        Should throw `InvalidPathElementException` if the element is invalid.
+        Not implemented in the base class.
+        """
         raise NotImplementedError("Not implemented")
-
-    def set_root(self, element: str) -> Self:
-        _validate_root(element)
-        self._root = element
-        return self
 
 
 class UnixPath(Path):
