@@ -1,8 +1,9 @@
 Safe Path
 =========
 
-
 **!!! EXPERIMENTAL CODE - DO NOT USE IN PRODUCTION !!!**
+
+![example workflow](https://github.com/v-p-b/SafePath/actions/workflows/python-package.yml/badge.svg)
 
 This is a prototype of a safe path handling library aimed to prevent directory traversal vulnerabilities.
 
